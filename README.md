@@ -11,16 +11,10 @@ by adjusting the number of multiprocessors and memory partitions.
 ## CUDA C++ Programming
 
 - `vector_add.cu`
-- `matrix_multiply.cu`
+- `matrix_mul.cu`
 - `reduction.cu`
 - `stream_example.cu`
 - `unified_memory.cu`
-
-To compile and run these examples, use the provided Makefile:
-
-```sh
-make
-```
 
 ## Further Reading
 
