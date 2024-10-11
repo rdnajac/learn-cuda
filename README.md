@@ -8,6 +8,14 @@ to enable fine-grained and coarse-grained parallelism, allowing
 programs to automatically scale across various GPU architectures,
 by adjusting the number of multiprocessors and memory partitions.
 
+## CUDA C++ Programming
+
+- `vector_add.cu`
+- `matrix_mul.cu`
+- `reduction.cu`
+- `stream_example.cu`
+- `unified_memory.cu`
+
 ## Further Reading
 
 - [CUDA Toolkit Documentation](https://docs.nvidia.com/cuda/index.html)
