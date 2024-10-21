@@ -18,4 +18,3 @@ clean:
 	rm -f $(EXECUTABLES)
 
 .PHONY: all clean
-
