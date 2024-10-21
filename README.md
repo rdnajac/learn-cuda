@@ -4,17 +4,9 @@ CUDA is a general-purpose parallel computing platform and programming
 model developed by NVIDIA to leverage the massive parallel processing
 power of GPUs. CUDA's scalable programming model uses abstractions like
 thread group hierarchies, shared memories, and barrier synchronization
-to enable fine-grained and coarse-grained parallelism, allowing
-programs to automatically scale across various GPU architectures,
+to enable fine-grained and coarse-grained parallelism; allowing
+programs to automatically scale across various GPU architectures
 by adjusting the number of multiprocessors and memory partitions.
-
-## CUDA C++ Programming
-
-- `vector_add.cu`
-- `matrix_mul.cu`
-- `reduction.cu`
-- `stream_example.cu`
-- `unified_memory.cu`
 
 ## Further Reading
 
