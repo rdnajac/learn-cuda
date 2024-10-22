@@ -302,6 +302,14 @@ where,
 | `__managed__`     | Declares a variable in managed memory              | Automatically handles memory allocation between host and device.           |
 | `__restrict__`    | Hints that a pointer is not aliased                | Optimizes memory access when the compiler can assume no aliasing occurs.   |
 
+#### A quick note on function keywords
+
+|                               | Executed on... | Callable from... | Notes                      |
+| ----------------------------- | -------------- | ---------------- | -------------------------- |
+| `__global__` float function() | (GPU) Device   | (CPU) Host       | cannot be part of a class  |
+| `__device__` float function() | (GPU) Device   | (GPU) Device     |                            |
+| `__host__` float function()   | (CPU) Host     | (CPU) Host       | implied when not specified |
+
 ## Further Reading
 
 - [CUDA Toolkit Documentation](https://docs.nvidia.com/cuda/index.html)
@@ -312,17 +320,14 @@ where,
 Blog:
 
 - [Intro](https://developer.nvidia.com/blog/even-easier-introduction-cuda/)
+- [Performance metrics](https://developer.nvidia.com/blog/how-implement-performance-metrics-cuda-cc/)
 - [Device Properties](https://developer.nvidia.com/blog/how-query-device-properties-and-handle-errors-cuda-cc/)
+- [Optimize data transfers](https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/)
+- [Overlap data transfers](https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/)
 - [Global Memory](https://developer.nvidia.com/blog/how-access-global-memory-efficiently-cuda-c-kernels/)
 - [Shared Memory](https://developer.nvidia.com/blog/using-shared-memory-cuda-cc/)
 - [Efficient Matrix Transpose](https://developer.nvidia.com/blog/efficient-matrix-transpose-cuda-cc/)
 
-TODO:
-
-- [Performance metrics](https://developer.nvidia.com/blog/how-implement-performance-metrics-cuda-cc/)
-- [Optimize data transfers](https://developer.nvidia.com/blog/how-optimize-data-transfers-cuda-cc/)
-- [Overlap data transfers](https://developer.nvidia.com/blog/how-overlap-data-transfers-cuda-cc/)
-
-Important!!!
-
-- [Unified Memory](https://developer.nvidia.com/blog/unified-memory-cuda-beginners/)
+> [!Important]
+>
+> - [Unified Memory](https://developer.nvidia.com/blog/unified-memory-cuda-beginners/)
