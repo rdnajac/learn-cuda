@@ -49,6 +49,21 @@ Acronyms that you should know:
 
 ## CUDA C++ Programming
 
+The CUDA programming model provides three key language extensions:
+
+- **CUDA blocks**: A group of threads that execute the same kernel code
+- **Shared memory**: A memory space shared by all threads in a block
+- **Synchronization barriers**: A mechanism to synchronize threads in a block by
+  making them wait until all threads have reached a certain point in the code
+
+### Execution
+
+A typical CUDA program consists of three main steps:
+
+> 1. Copy the input data from host memory to device memory, also known as host-to-device transfer.
+> 2. Load the GPU program and execute, caching data on-chip for performance.
+> 3. Copy the results from device memory to host memory, also called device-to-host transfer.
+
 A kernel is a function that runs on the GPU. It is defined with the
 `__global__` keyword and is called from the host code.
 
@@ -88,14 +103,7 @@ int main()
 > thread's index within the grid and the convention of prefixing variables
 > that reside on the device with `d_` (and `h_` for host variables).
 
-The CUDA programming model provides three key language extensions:
-
-- **CUDA blocks**: A group of threads that execute the same kernel code
-- **Shared memory**: A memory space shared by all threads in a block
-- **Synchronization barriers**: A mechanism to synchronize threads in a block by
-  making them wait until all threads have reached a certain point in the code
-
-### Breakdown of the Launch Syntax
+#### Breakdown of the Launch Syntax
 
 `add<<<1, 256>>>(N, x, y);`
 
@@ -114,7 +122,7 @@ The CUDA programming model provides three key language extensions:
 3. **Kernel Arguments**: `(N, x, y)`
    - These are the parameters passed to the kernel. They can be any type supported in CUDA, including scalars, pointers, etc. In this case, `N` is likely an integer representing the size of the operation, while `x` and `y` are pointers to arrays in device memory.
 
-### What Happens if You Don’t Need All 256 Threads?
+#### What Happens if You Don’t Need All 256 Threads?
 
 1. **Unused Threads**:
 
@@ -129,7 +137,53 @@ The CUDA programming model provides three key language extensions:
    - The occupancy of a kernel (the ratio of active warps to the maximum number of warps supported on the multiprocessor) might not be optimal if a large number of threads remain unused. This could lead to underutilization of the GPU.
 
 4. **Kernel Execution**:
+
    - The kernel will still execute without error, but the performance may be less than optimal. If your computation only requires `M` threads, it's better to launch a grid and block configuration that aligns with the actual workload, such as using fewer threads or blocks.
+
+### Another Example
+
+```cuda
+// Kernel - Adding two matrices MatA and MatB
+__global__ void MatAdd(float MatA[N][N], float MatB[N][N], float MatC[N][N])
+{
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    int j = blockIdx.y * blockDim.y + threadIdx.y;
+    if (i < N && j < N)
+        MatC[i][j] = MatA[i][j] + MatB[i][j];
+}
+
+int main()
+{
+    //...
+    // Matrix addition kernel launch from host code
+    dim3 threadsPerBlock(16, 16);
+    dim3 numBlocks((N + threadsPerBlock.x -1) / threadsPerBlock.x, (N+threadsPerBlock.y -1) / threadsPerBlock.y);
+    MatAdd<<<numBlocks, threadsPerBlock>>>(MatA, MatB, MatC);
+    //...
+}
+```
+
+In this example, we:
+
+1. Define Threads per Block (`dim3 threadsPerBlock(16, 16);`)
+
+   - 16 in both x and y dimensions (total of 256 threads).
+
+2. Calculate Number of Blocks (`dim3 numBlocks(...);`)
+
+   - Uses N (number of elements) to determine blocks in both dimensions.
+   - The formula ensures that any leftover elements are accounted for.
+
+3. Launch the Kernel (`MatAdd<<<numBlocks, threadsPerBlock>>>(MatA, MatB, MatC);`)
+
+   - Launches the `MatAdd` kernel with the defined number of blocks and threads.
+   - `MatA`, `MatB`, and `MatC` are the matrices being processed.
+
+> [!IMPORTANT]
+> It is common to see the number of threads per block calcualted as
+> above (e.g., `(N + threadsPerBlock.x - 1) / threadsPerBlock.x`).
+> This is a common convention to ensure that the grid is large enough
+> to cover all elements in the matrix and handles any remainders.
 
 ### Thread Hierarchy
 
@@ -142,6 +196,16 @@ within the block.
 > During execution there is a finer grouping of threads into _warps_.
 
 ### Memory Hierarchy
+
+The following memories are exposed by the GPU architecture:
+
+- **Registers**: These are private to each thread, which means that registers assigned to a thread are not visible to other threads. The compiler makes decisions about register utilization.
+- **L1/Shared memory (SMEM)**: Every SM has a fast, on-chip scratchpad memory that can be used as L1 cache and shared memory. All threads in a CUDA block can share shared memory, and all CUDA blocks running on a given SM can share the physical memory resource provided by the SM.
+- **Read-only memory (ROM)**:Each SM has an instruction cache, constant memory, texture memory and RO cache, which is read-only to kernel code.
+- **L2 cache**: The L2 cache is shared across all SMs, so every thread in every CUDA block can access this memory.
+- **Global memory (DRAM)**:This is the framebuffer size of the GPU and DRAM sitting in the GPU.
+
+Some things to remember about memory in CUDA:
 
 - Each thread has private local memory.
 - Each thread block has shared memory that is:
@@ -185,7 +249,27 @@ barrier when all threads in the block have reached it.
 
 ## SIMT Architecture
 
-...
+The NVIDIA GPU architecture features a scalable array of multithreaded Streaming
+Multiprocessors (SMs) that efficiently execute CUDA kernels. Each multiprocessor
+handles hundreds of threads using the SIMT (Single Instruction, Multiple Thread)
+architecture, allowing for simultaneous execution of warps—groups of 32 threads.
+Warps can diverge during execution, but with the introduction of Independent
+Thread Scheduling in the Volta architecture, threads can now execute
+independently, enhancing flexibility and performance. The hardware also
+maintains execution contexts on-chip, enabling efficient context switching and
+execution of multiple warps within the available register and shared memory limits.
+
+The total number of warps in a block is as follows:
+
+$$
+\text{ceil} \left( \frac{T}{W_{size}}, 1 \right)
+$$
+
+where,
+
+- $T$ is the total number of threads in the block
+- $W_{size}$ is the warp size (usually 32)
+- ceil is the ceiling function (equal to x rounded up to the nearest integer)
 
 ## Appendix
 
